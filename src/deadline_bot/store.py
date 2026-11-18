@@ -28,6 +28,23 @@ class Store:
                 warned INTEGER NOT NULL DEFAULT 0
             )"""
         )
+        self.db.execute(
+            """CREATE TABLE IF NOT EXISTS timezones (
+                user_id INTEGER PRIMARY KEY,
+                tz TEXT NOT NULL
+            )"""
+        )
+        self.db.commit()
+
+    def get_timezone(self, user_id: int) -> str | None:
+        row = self.db.execute(
+            "SELECT tz FROM timezones WHERE user_id = ?", (user_id,)).fetchone()
+        return row[0] if row else None
+
+    def set_timezone(self, user_id: int, tz: str) -> None:
+        self.db.execute(
+            "INSERT INTO timezones (user_id, tz) VALUES (?, ?) "
+            "ON CONFLICT(user_id) DO UPDATE SET tz = excluded.tz", (user_id, tz))
         self.db.commit()
 
     def _rows(self, sql: str, *args) -> list[Deadline]:

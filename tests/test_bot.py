@@ -42,3 +42,41 @@ def test_store_reminder_flow():
     assert not s.remove(far, user_id=2)  # can't delete someone else's
     assert s.remove(far, user_id=1)
     assert [d.title for d in s.upcoming(1)] == ["Quiz"]
+
+
+@pytest.mark.parametrize("text", ["in 0m", "in 0h 0d"])
+def test_parse_when_rejects_zero_delay(text):
+    with pytest.raises(ValueError):
+        parse_when(text, NOW)
+
+
+def test_parse_when_uses_the_users_timezone():
+    from zoneinfo import ZoneInfo
+    vienna_now = datetime(2026, 11, 18, 12, 0, tzinfo=ZoneInfo("Europe/Vienna"))
+    due = parse_when("25.11.2026 14:00", vienna_now)
+    # 14:00 in Vienna (winter, UTC+1) is 13:00 UTC, no matter where the bot runs.
+    assert due.astimezone(timezone.utc).hour == 13
+
+
+def test_store_remembers_timezones():
+    s = Store(":memory:")
+    assert s.get_timezone(1) is None
+    s.set_timezone(1, "Europe/Vienna")
+    s.set_timezone(1, "Asia/Tokyo")  # changing it overwrites
+    assert s.get_timezone(1) == "Asia/Tokyo"
+
+
+def test_fit_lines_stays_under_discords_limit():
+    from deadline_bot import MAX_MESSAGE, fit_lines
+    lines = [f"**#{i}** " + "x" * 100 for i in range(50)]
+    text = fit_lines(lines)
+    assert len(text) <= MAX_MESSAGE
+    assert text.endswith("more.")
+    assert fit_lines(["a", "b"]) == "a\nb"
+
+
+def test_bot_pings_nobody_by_default():
+    from deadline_bot import DeadlineBot
+    bot = DeadlineBot(Store(":memory:"), None, timezone.utc)
+    mentions = bot.allowed_mentions
+    assert not mentions.everyone and not mentions.roles and not mentions.users

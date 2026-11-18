@@ -25,6 +25,8 @@ def parse_when(text: str, now: datetime) -> datetime:
         delta = timedelta()
         for amount, unit in parts:
             delta += timedelta(**{UNITS[unit]: int(amount)})
+        if delta < timedelta(minutes=1):
+            raise ValueError("Pick a time at least 1 minute from now.")
         return now + delta
 
     for fmt in DATE_FORMATS:

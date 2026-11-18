@@ -9,8 +9,9 @@ A Discord bot that keeps track of your deadlines and pings you before they're du
 | `/remind what when` | Add a deadline. `when` can be `in 2h`, `in 3d 4h`, `2026-11-25 14:00` or `25.11.2026` |
 | `/deadlines` | List your upcoming deadlines (only you can see the list) |
 | `/done number` | Remove a deadline you've finished |
+| `/timezone name` | Set your time zone (e.g. `Europe/Vienna`) so dates you type mean *your* local time |
 
-The bot posts a reminder **24 hours before** each deadline and again **when it's due**. Times show in each person's own timezone.
+The bot posts a reminder **24 hours before** each deadline and again **when it's due**. Times show in each person's own timezone. If the channel isn't reachable any more, the reminder comes as a DM instead.
 
 ## Run it yourself
 
